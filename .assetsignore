@@ -1,0 +1,14 @@
+node_modules/
+.git/
+.vercel/
+server/
+supabase/
+api/
+package.json
+package-lock.json
+README.md
+vercel.json
+wrangler.jsonc
+cloudflare-worker.js
+.env
+.env.*
