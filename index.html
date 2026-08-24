@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAI Assistant</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen text-slate-100 flex items-center justify-center p-6">
+  <!-- FLOATING AI WIDGET CONTAINER -->
+  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    
+    <!-- MESSENGER POPUP CARD -->
+    <div id="chat-card" class="pointer-events-auto transition-all duration-300 ease-out transform translate-y-8 opacity-0 scale-95 hidden w-[380px] h-[520px] mb-4 rounded-3xl bg-[#0b0518]/95 border border-purple-500/30 backdrop-blur-xl chat-shadow flex flex-col overflow-hidden">
+      
+      <!-- HEADER -->
+      <div class="p-4 bg-purple-950/40 border-b border-purple-500/20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <span class="w-3 h-3 bg-pink-400 rounded-full block border-2 border-[#0b0518]"></span>
+            <span class="w-3 h-3 bg-pink-400 rounded-full block absolute inset-0 animate-ping opacity-75"></span>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-purple-100 flex items-center gap-1.5">NAI <span class="text-xs">✨</span></h3>
+          </div>
+        </div>
+        <button id="close-chat" class="text-purple-300/60 hover:text-white p-1 rounded-lg hover:bg-purple-900/40 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- CHAT STREAM -->
+      <div id="chat-stream" class="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar text-xs leading-relaxed">
+        <div class="flex items-start gap-2.5">
+          <div class="bg-purple-900/40 border border-purple-500/30 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-slate-200">
+            💖 Hi there! I'm NAI! How can I help you today?
+          </div>
+        </div>
+      </div>
+
+      <!-- TYPING INDICATOR -->
+      <div id="typing-indicator" class="px-4 py-1.5 hidden">
+        <div class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-900/30 border border-purple-500/20">
+          <span class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-bounce"></span>
+          <span class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+          <span class="w-1.5 h-1.5 bg-pink-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+        </div>
+      </div>
+
+      <!-- INPUT FORM -->
+      <form id="chat-form" class="p-3 bg-purple-950/30 border-t border-purple-500/20 flex gap-2">
+        <input type="text" id="chat-input" placeholder="Ask NAI anything..." class="flex-1 bg-purple-950/50 border border-purple-500/30 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-purple-300/40 focus:outline-none focus:border-purple-400 transition" autocomplete="off" />
+        <button type="submit" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium px-3.5 py-2.5 rounded-xl transition shadow-lg shadow-pink-600/30 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- TRIGGER BUTTON WITH 3D CANVAS EMBED -->
+    <button id="mascot-trigger" class="pointer-events-auto relative group flex items-center justify-center w-36 h-36 rounded-full bg-gradient-to-b from-purple-900/80 to-[#080311]/90 border border-pink-400/40 mascot-glow transition-transform duration-300 hover:scale-105 active:scale-95 focus:outline-none">
+      <div class="absolute inset-0 rounded-full bg-pink-500/20 blur-md group-hover:bg-pink-500/30 transition"></div>
+      <div id="hd-mascot-canvas" class="w-full h-full relative z-10 cursor-pointer"></div>
+    </button>
+  </div>
+
+  <!-- ADMIN PORTAL -->
+  <div id="admin-portal" class="admin-portal hidden fixed inset-0 z-[60] p-4 sm:p-8 overflow-y-auto">
+    <div class="admin-panel mx-auto w-full max-w-3xl rounded-3xl border border-purple-400/30 bg-[#0b0518]/95 backdrop-blur-xl shadow-2xl shadow-purple-950/70">
+      <div class="flex items-start justify-between gap-4 p-6 border-b border-purple-500/20">
+        <div>
+          <p class="text-xs uppercase tracking-[0.2em] text-pink-300/70">NAI control room</p>
+          <h2 class="mt-1 text-2xl font-bold text-white">Attach a system</h2>
+          <p class="mt-2 text-sm text-purple-200/70">Load the system guide, create an embed key, and connect NAI to your app.</p>
+        </div>
+        <button id="close-admin" type="button" aria-label="Close admin portal" class="text-purple-300/60 hover:text-white p-2 rounded-lg hover:bg-purple-900/50 transition">&#10005;</button>
+      </div>
+
+      <div class="grid gap-6 p-6 md:grid-cols-2">
+        <section class="space-y-4">
+          <label class="block text-sm font-medium text-purple-100">
+            System name
+            <input id="system-name" type="text" value="My Connected System" class="admin-input mt-2" />
+          </label>
+          <label class="admin-upload flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-purple-400/40 bg-purple-950/30 p-6 text-center hover:border-pink-400/70 transition">
+            <span class="text-2xl text-pink-300">+</span>
+            <span class="text-sm font-medium text-purple-100">Attach a guide</span>
+            <span class="text-xs text-purple-300/60">.txt or .docx, up to 5 MB</span>
+            <input id="knowledge-file" type="file" accept=".txt,.docx,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" />
+          </label>
+          <div id="knowledge-status" class="min-h-6 text-xs text-purple-200/70" aria-live="polite">No guide attached yet.</div>
+          <button id="generate-link" type="button" class="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-950/30 hover:from-purple-500 hover:to-pink-500 transition">Generate secure embed link</button>
+        </section>
+
+        <section class="space-y-4">
+          <div>
+            <label for="embed-link" class="text-sm font-medium text-purple-100">Embed link</label>
+            <div class="mt-2 flex gap-2">
+              <input id="embed-link" type="text" readonly placeholder="Generate a link first" class="admin-input min-w-0" />
+              <button id="copy-link" type="button" class="admin-copy">Copy</button>
+            </div>
+          </div>
+          <div>
+            <label for="embed-code" class="text-sm font-medium text-purple-100">Integration code</label>
+            <textarea id="embed-code" readonly placeholder="Your integration snippet will appear here" class="admin-input admin-code mt-2"></textarea>
+            <button id="copy-code" type="button" class="admin-copy mt-2">Copy code</button>
+          </div>
+          <p class="rounded-xl border border-amber-300/20 bg-amber-300/5 p-3 text-xs leading-relaxed text-amber-100/70">Prototype note: this browser-only portal stores knowledge locally. For a genuinely secure link, move token creation and document storage to your authenticated server.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+  <script src="javascript/script.js"></script>
+</body>
+</html>
